@@ -9,8 +9,11 @@ from pyspark.sql import DataFrame
 
 def castFloats(df: DataFrame):
     return df.withColumn("PREÇO MÉDIO REVENDA",
-                         regexp_replace("PREÇO MÉDIO REVENDA", ',', '.').cast(DecimalType(6, 3)))
-
+                         regexp_replace("PREÇO MÉDIO REVENDA", ',', '.').cast(DecimalType(6, 3))).\
+        withColumn("PREÇO MÁXIMO REVENDA",
+                         regexp_replace("PREÇO MÁXIMO REVENDA", ',', '.')). \
+        withColumn("PREÇO MÍNIMO REVENDA",
+                   regexp_replace("PREÇO MÍNIMO REVENDA", ',', '.'))
 
 def castDates(df: DataFrame):
     return df.withColumn("DATA INICIAL", to_date(df["DATA INICIAL"], "dd/MM/yyyy")) \

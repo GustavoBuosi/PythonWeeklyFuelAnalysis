@@ -3,7 +3,10 @@ from pyspark.sql.functions import col
 from rows.row_rules import *
 from contas_mensal_cidade.math_logic import *
 from contas_semanal.token_casts import *
+from contas_mensal_estado.math_logic import *
 from contas_semanal.math_logic import *
+from contas_mensal_regiao.math_logic import *
+
 import os
 
 if __name__ == "__main__":
@@ -31,11 +34,8 @@ if __name__ == "__main__":
     df = correctNumberOfDays(df, date_min, date_max)
     df = getWeightFactor(df)
     df = getWeightedAveragePrice(df)
-    df = concatenate(df)
     # Resultado para a questão (a):
     dfA = aggregateValuesPerCity(df)
-    # Resultado para questão (b), aproveitando o dfA processado:
-    # dfB = aggregateValuesPerStateAndZone(dfA)
 
     # df.printSchema()
     # df.show()
@@ -45,4 +45,39 @@ if __name__ == "__main__":
         .option("header","true")\
         .option("sep",",")\
         .mode("overwrite")\
-        .csv("file:///home/gustavo/PycharmProjects/PySparkWeeklyFuelAnalysis/results.csv")
+        .csv("file:///home/gustavo/PycharmProjects/PySparkWeeklyFuelAnalysis/resultsA.csv")
+    # Pegando o DataFrame com os pesos por Estado:
+
+    dfPesosPorEstado = aggregateNumeroPostosEstado(dfA)
+
+    dfBAux1 = getTotalNumberOfPostsPolledPerState(dfA,dfPesosPorEstado)
+
+    dfBAux1 = getWeightedAveragePricePerState(dfBAux1)
+
+    dfB1 = getMonthlyPricePerState(dfBAux1)
+
+    dfB1 \
+        .coalesce(1) \
+        .write \
+        .option("header", "true") \
+        .option("sep", ",") \
+        .mode("overwrite") \
+        .csv("file:///home/gustavo/PycharmProjects/PySparkWeeklyFuelAnalysis/resultsB1.csv")
+
+    # Pegando o DataFrame com os pesos por Região:
+    dfPesosPorRegiao = aggregateNumeroPostosRegiao(dfA)
+
+    dfBAux2 = getTotalNumberOfPostsPolledPerRegion(dfA,dfPesosPorRegiao)
+
+    dfBAux2 = getWeightedAveragePricePerRegion(dfBAux2)
+
+    dfB2 = getMonthlyPricePerRegion(dfBAux1)
+
+
+    dfB2 \
+        .coalesce(1) \
+        .write \
+        .option("header", "true") \
+        .option("sep", ",") \
+        .mode("overwrite") \
+        .csv("file:///home/gustavo/PycharmProjects/PySparkWeeklyFuelAnalysis/resultsB2.csv")

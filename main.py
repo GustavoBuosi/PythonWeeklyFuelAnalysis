@@ -37,8 +37,6 @@ if __name__ == "__main__":
     # Resultado para a questão (a):
     dfA = aggregateValuesPerCity(df)
 
-    # df.printSchema()
-    # df.show()
     dfA\
         .coalesce(1)\
         .write\
